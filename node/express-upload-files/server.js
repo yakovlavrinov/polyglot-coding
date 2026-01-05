@@ -1,12 +1,8 @@
 import express from 'express'
 import multer from 'multer'
-import fs from 'fs'
-import { createWriteStream } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import Busboy from 'busboy'
+import fs, { createWriteStream } from 'fs'
+import { join } from 'path'
 
 const app = express()
 
@@ -57,56 +53,49 @@ app.post('/upload-memory', uploadToMemory.single('file'), (req, res) => {
 })
 
 app.post('/upload-stream', (req, res) => {
-  // Мы используем multer БЕЗ storage — только для парсинга формы
-  const upload = multer().single('file')
+  const busboy = Busboy({ headers: req.headers })
 
-  upload(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({ error: 'Ошибка парсинга файла: ' + err.message })
-    }
+  busboy.on('file', (_fieldname, file, info) => {
+    const { filename, mimeType } = info
 
-    // Если файла нет
-    if (!req.file) {
-      return res.status(400).json({ error: 'Файл не загружен' })
-    }
+    const uniqueName = `${Date.now()}-${filename}`
+    const filePath = join('stream-files', uniqueName)
 
-    // Multer в режиме без storage даёт нам req.file.stream — это Readable поток!
-    const fileStream = req.file.stream
-    if (!fileStream) {
-      return res.status(500).json({ error: 'Поток файла не доступен' })
-    }
-
-    // Создаём уникальное имя файла
-    const uniqueName = `${Date.now()}-${req.file.originalname}`
-    const filePath = join(__dirname, 'uploads', uniqueName)
-
-    // Создаём поток записи на диск
     const writeStream = createWriteStream(filePath)
 
-    // Самая важная строка: напрямую соединяем потоки!
-    // Данные идут чанками прямо с клиента → на диск, без буфера в памяти
-    fileStream.pipe(writeStream)
+    let size = 0
 
-    let receivedBytes = 0
-    fileStream.on('data', (chunk) => {
-      receivedBytes += chunk.length
+    file.on('data', (chunk) => {
+      size += chunk.length
+    })
+
+    file.on('error', () => {
+      res.status(500).json({ error: 'Ошибка чтения файла' })
+    })
+
+    writeStream.on('error', () => {
+      res.status(500).json({ error: 'Ошибка записи файла' })
     })
 
     writeStream.on('finish', () => {
       res.json({
-        message: 'Файл успешно загружен через настоящий кастомный стриминг!',
-        originalName: req.file.originalname,
-        savedAs: uniqueName,
-        size: receivedBytes,
-        method: 'custom stream.pipe() — без загрузки в память',
+        message: 'Файл загружен через стриминг',
+        filename: uniqueName,
+        originalName: filename,
+        mimetype: mimeType,
+        size,
       })
     })
 
-    writeStream.on('error', (err) => {
-      console.error('Ошибка записи:', err)
-      res.status(500).json({ error: 'Не удалось сохранить файл' })
-    })
+    // 🔑 ключевая строка — настоящий streaming
+    file.pipe(writeStream)
   })
+
+  busboy.on('error', () => {
+    res.status(500).json({ error: 'Ошибка обработки формы' })
+  })
+
+  req.pipe(busboy)
 })
 
 // Конфигурация с лимитами
@@ -140,7 +129,7 @@ app.post('/upload-secure', uploadWithLimits.single('file'), (req, res) => {
   })
 })
 
-// ДЛЯ ТЕСТИРОВАНИЯ 
+// ДЛЯ ТЕСТИРОВАНИЯ
 
 // Статическая раздача загруженных файлов
 app.use('/uploads', express.static('uploads'))
