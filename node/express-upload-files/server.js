@@ -82,8 +82,9 @@ app.post('/upload-stream', (req, res) => {
         message: 'Файл загружен через стриминг',
         filename: uniqueName,
         originalName: filename,
-        mimetype: mimeType,
         size,
+        mimetype: mimeType,
+        path: filePath,
       })
     })
 
@@ -105,7 +106,7 @@ const uploadWithLimits = multer({
     fileSize: 10 * 1024 * 1024, // 10MB максимум
     files: 1, // только 1 файл
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Фильтр по типу файла
     const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf']
     if (allowedTypes.includes(file.mimetype)) {
@@ -116,6 +117,7 @@ const uploadWithLimits = multer({
   },
 })
 
+// Загрузка в память с лимитами
 app.post('/upload-secure', uploadWithLimits.single('file'), (req, res) => {
   res.json({
     message: 'Файл загружен с проверками безопасности',
@@ -129,13 +131,6 @@ app.post('/upload-secure', uploadWithLimits.single('file'), (req, res) => {
   })
 })
 
-// ДЛЯ ТЕСТИРОВАНИЯ
-
-// Статическая раздача загруженных файлов
-app.use('/uploads', express.static('uploads'))
-app.use('/files', express.static('files'))
-app.use('/stream-files', express.static('stream-files'))
-
 // HTML форма для тестирования
 app.use(express.static('public'))
 
@@ -143,12 +138,7 @@ app.use(express.static('public'))
 const PORT = 3000
 app.listen(PORT, () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`)
-  console.log('\nДля тестирования используйте:')
-  console.log('1. Откройте браузер и перейдите по адресу выше')
-  console.log('2. Или используйте curl:')
-  console.log('   curl -F "file=@big.txt" http://localhost:3000/upload-disk')
-  console.log('   curl -F "file=@big.txt" http://localhost:3000/upload-memory')
-  console.log('   curl -F "file=@big.txt" http://localhost:3000/upload-stream')
+  console.log('Откройте браузер и перейдите по адресу выше')
 })
 
 export default app

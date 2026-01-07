@@ -1,54 +1,46 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тест загрузки файлов</title>
-  <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Тестирование загрузки файлов в Express + Multer</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тест загрузки файлов</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Тестирование загрузки файлов в Express + Multer</h1>
 
-    <section>
-      <h2>1. На диск (DiskStorage)</h2>
-      <form action="/upload-disk" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <button type="submit">Загрузить на диск</button>
-      </form>
-    </section>
+      <section>
+        <h2>1. На диск (DiskStorage)</h2>
+        <form action="/upload-disk" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" required />
+          <button type="submit">Загрузить на диск</button>
+        </form>
+      </section>
 
-    <section>
-      <h2>2. В память (MemoryStorage — опасно для больших файлов!)</h2>
-      <form action="/upload-memory" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <button type="submit">Загрузить в память</button>
-      </form>
-    </section>
+      <section>
+        <h2>2. В память (MemoryStorage — опасно для больших файлов!)</h2>
+        <form action="/upload-memory" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" required />
+          <button type="submit">Загрузить в память</button>
+        </form>
+      </section>
 
-    <section>
-      <h2>3. Стриминг (в текущей реализации — тоже в память)</h2>
-      <form action="/upload-stream" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <button type="submit">Загрузить через стриминг</button>
-      </form>
-    </section>
+      <section>
+        <h2>3. Стриминг (в текущей реализации — тоже в память)</h2>
+        <form action="/upload-stream" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" required />
+          <button type="submit">Загрузить через стриминг</button>
+        </form>
+      </section>
 
-    <section>
-      <h2>4. Безопасная загрузка (с лимитами и фильтром)</h2>
-      <form action="/upload-secure" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <button type="submit">Загрузить с проверками</button>
-      </form>
-    </section>
-
-    <hr>
-    <h3>Просмотр загруженных файлов:</h3>
-    <ul>
-      <li><a href="/uploads" target="_blank">/uploads</a> — DiskStorage</li>
-      <li><a href="/files" target="_blank">/files</a> — MemoryStorage</li>
-      <li><a href="/stream-files" target="_blank">/stream-files</a> — Streaming</li>
-    </ul>
-  </div>
-</body>
+      <section>
+        <h2>4. Безопасная загрузка (с лимитами и фильтром)</h2>
+        <form action="/upload-secure" method="post" enctype="multipart/form-data">
+          <input type="file" name="file" required />
+          <button type="submit">Загрузить с проверками</button>
+        </form>
+      </section>
+    </div>
+  </body>
 </html>
