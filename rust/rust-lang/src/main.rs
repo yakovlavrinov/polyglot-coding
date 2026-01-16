@@ -124,4 +124,6 @@ fn main() {
         Some(x) => println!("{}", x),
         None => println!("no value")
       }
+
+      // Для запуска cargo run
 }
