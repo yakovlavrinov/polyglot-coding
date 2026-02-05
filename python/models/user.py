@@ -10,7 +10,7 @@ class User:
     def greet (self) -> str:
         return f"Hello, my name is {self.name}"
 
-    def deactivation(self) -> str:
+    def deactivate(self) -> str:
         self.is_active = False
 
     def __str__(self) -> str:
